@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17253b">
+  <meta name="description" content="Espace équipe : intégration, prospection et suivi des activités.">
+  <title>RE’SPOND’S — Espace équipe</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./config.js"></script>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <a class="brand brand-dark" href="./" aria-label="Accueil">
+        <span class="brand-mark">RT</span><span>RE’SPOND’S<small>TECH&INVEST · CRM</small></span>
+      </a>
+      <p class="eyebrow">CRM & intégration</p>
+      <h1>Bienvenue dans l’équipe.</h1>
+      <p class="muted">Connectez-vous avec l’adresse professionnelle qui vous a été invitée.</p>
+      <form id="login-form">
+        <label for="login-email">Adresse e-mail</label>
+        <input id="login-email" name="email" type="email" autocomplete="username" required>
+        <label for="login-password">Mot de passe</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+        <button class="button button-primary button-wide" type="submit">Se connecter</button>
+      </form>
+      <p id="auth-message" class="form-message" role="status"></p>
+      <button id="auth-sign-out" class="text-button" type="button" hidden>Se déconnecter de ce compte</button>
+      <p class="tiny muted">Accès sur invitation uniquement. Demandez l’accès à votre responsable.</p>
+    </div>
+  </div>
+
+  <div id="app-shell" class="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#dashboard">
+        <span class="brand-mark">RT</span><span>RE’SPOND’S<small>TECH&INVEST · CRM</small></span>
+      </a>
+      <nav class="side-nav" aria-label="Navigation principale">
+        <button class="nav-link active" data-view="dashboard"><span aria-hidden="true">⌂</span> Vue d’ensemble</button>
+        <button class="nav-link" data-view="contacts"><span aria-hidden="true">◎</span> Contacts <span id="nav-contact-count" class="nav-count">0</span></button>
+        <button class="nav-link" data-view="activities"><span aria-hidden="true">↗</span> Activités</button>
+        <button class="nav-link" data-view="onboarding"><span aria-hidden="true">✓</span> Guide d’équipe</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="security-note"><span class="secure-dot"></span><span>Espace privé<br><small>Données de votre équipe</small></span></div>
+        <button id="sign-out" class="nav-link sign-out"><span aria-hidden="true">↪</span> Se déconnecter</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button id="mobile-menu" class="icon-button mobile-menu" type="button" aria-label="Ouvrir le menu">☰</button>
+        <div><p class="eyebrow" id="today-label"></p><h1 id="page-title">Vue d’ensemble</h1></div>
+        <div class="topbar-actions"><label id="team-picker-wrap" class="team-picker" hidden>Équipe<select id="team-picker" aria-label="Choisir une équipe"></select></label><div class="user-chip"><span id="user-avatar" class="avatar">DS</span><span id="user-email" class="user-email"></span></div></div>
+      </header>
+
+      <section id="view-dashboard" class="view">
+        <div class="welcome-banner">
+          <div><p class="eyebrow eyebrow-light">VOTRE ESPACE DE TRAVAIL</p><h2>Bonjour, <span id="first-name">collaborateur</span>.</h2><p>Une équipe alignée, des actions visibles, des résultats qui avancent.</p></div>
+          <div class="banner-orb" aria-hidden="true">DS</div>
+        </div>
+        <div class="stat-grid">
+          <article class="stat-card"><span class="stat-icon coral">◎</span><span class="stat-label">Contacts suivis</span><strong id="stat-contacts">0</strong><small>Dans votre équipe</small></article>
+          <article class="stat-card"><span class="stat-icon blue">↗</span><span class="stat-label">Activités consignées</span><strong id="stat-activities">0</strong><small>Appels, rendez-vous, relances…</small></article>
+          <article class="stat-card"><span class="stat-icon gold">◷</span><span class="stat-label">Prochaines échéances</span><strong id="stat-due">0</strong><small>À suivre dans les 7 jours</small></article>
+        </div>
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-heading"><div><p class="eyebrow">SUIVI COMMERCIAL</p><h2>Contacts récents</h2></div><button class="text-button" data-go="contacts">Voir tous <span aria-hidden="true">→</span></button></div>
+            <div id="recent-contacts" class="contact-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading"><div><p class="eyebrow">À NE PAS OUBLIER</p><h2>Prochaines étapes</h2></div><span class="soft-icon">◷</span></div>
+            <div id="upcoming-activities" class="activity-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="view-contacts" class="view" hidden>
+        <div class="section-intro"><div><p class="eyebrow">PROSPECTS & CLIENTS</p><h2>Vos contacts, sans perdre le fil.</h2><p>Centralisez les entreprises approchées, les échanges et la prochaine relance.</p></div><button id="add-contact" class="button button-primary" type="button"><span aria-hidden="true">＋</span> Ajouter un contact</button></div>
+        <div class="toolbar"><label class="search-box"><span aria-hidden="true">⌕</span><input id="contact-search" type="search" placeholder="Rechercher un nom, une société, un e-mail…" autocomplete="off"></label><select id="contact-filter" aria-label="Filtrer les contacts"><option value="all">Tous les contacts</option><option value="prospect">Prospects</option><option value="client">Clients</option><option value="partner">Partenaires</option></select></div>
+        <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Contact</th><th>Entreprise</th><th>Statut</th><th>Responsable</th><th>Prochaine étape</th><th></th></tr></thead><tbody id="contact-rows"></tbody></table></div><div id="contact-empty" class="empty-state" hidden><span>◎</span><strong>Aucun contact pour le moment</strong><p>Ajoutez un prospect ou un client pour démarrer votre suivi.</p><button class="button button-secondary" data-add-contact>Ajouter un contact</button></div></div>
+      </section>
+
+      <section id="view-activities" class="view" hidden>
+        <div class="section-intro"><div><p class="eyebrow">JOURNAL D’ÉQUIPE</p><h2>Les actions font avancer les projets.</h2><p>Consignez les échanges, rendez-vous, relances et dépenses pour un suivi transparent.</p></div><button id="add-activity" class="button button-primary" type="button"><span aria-hidden="true">＋</span> Consigner une action</button></div>
+        <div id="activity-feed" class="feed"></div>
+      </section>
+
+      <section id="view-onboarding" class="view" hidden>
+        <div class="section-intro"><div><p class="eyebrow">PARCOURS D’INTÉGRATION</p><h2>Un cadre clair pour bien travailler ensemble.</h2><p>Les repères de l’équipe, réunis au même endroit.</p></div></div>
+        <div class="onboarding-layout">
+          <div class="panel guide-panel">
+            <div class="guide-header"><span class="guide-icon">✳</span><div><p class="eyebrow">NOS REPÈRES</p><h3>Note de conduite et de professionnalisme</h3><p class="muted">Émise par la Direction générale</p></div></div>
+            <div class="guide-list">
+              <article><span>01</span><div><h4>Respect et communication professionnelle</h4><p>Des échanges courtois, constructifs et adaptés à un environnement international. Le respect s’applique à toutes et tous.</p></div></article>
+              <article><span>02</span><div><h4>Rôles et responsabilités</h4><p>Respecter le périmètre de chacun, partager les informations utiles et collaborer sans contourner ni dénigrer.</p></div></article>
+              <article><span>03</span><div><h4>Transparence des actions</h4><p>Signaler les appels, rendez-vous, négociations, démarches, interventions et dépenses effectués au nom de l’entreprise.</p></div></article>
+              <article><span>04</span><div><h4>Preuves et justificatifs</h4><p>Associer aux activités les comptes-rendus et documents utiles. Justifier les dépenses avec un reçu clair.</p></div></article>
+              <article><span>05</span><div><h4>CRM tenu à jour</h4><p>Enregistrer les contacts, réponses, relances, actions, documents transmis et prochaines étapes dans cet espace.</p></div></article>
+              <article><span>06</span><div><h4>Délais et difficultés</h4><p>Communiquer les échéances et avancements, et remonter rapidement les blocages avec des pistes de solution.</p></div></article>
+              <article><span>07</span><div><h4>Esprit d’équipe et représentation</h4><p>Agir avec pragmatisme et responsabilité : chaque interaction professionnelle engage l’image de l’entreprise.</p></div></article>
+              <article><span>08</span><div><h4>Responsabilité et accompagnement</h4><p>Les écarts sont traités de manière proportionnée selon les procédures applicables, avec écoute, contexte et possibilité de réponse.</p></div></article>
+            </div>
+            <div class="ack-card"><label><input id="ack-checkbox" type="checkbox"><span>J’ai pris connaissance de ces repères et je sais où retrouver la note complète.</span></label><button id="acknowledge" class="button button-primary" type="button" disabled>Confirmer ma lecture</button><p id="ack-status" class="form-message" role="status"></p></div>
+          </div>
+          <aside class="panel onboarding-aside"><p class="eyebrow">VOTRE DÉMARRAGE</p><h3>Les bons réflexes</h3><ul><li>Présentez votre périmètre et vos objectifs.</li><li>Enregistrez chaque contact et prochaine relance.</li><li>Ajoutez les justificatifs aux activités concernées.</li><li>Partagez les échéances et les difficultés.</li></ul><div class="aside-callout">Besoin d’aide ? Adressez-vous à votre responsable ou à l’administrateur CRM.</div><p class="tiny muted">La note complète et ses modalités doivent être communiquées par la Direction.</p></aside>
+        </div>
+      </section>
+
+      <footer class="app-footer"><span>Un espace partagé, des informations utiles à toute l’équipe.</span><span>RE’SPOND’S Tech&Invest · CRM</span></footer>
+    </main>
+  </div>
+
+  <dialog id="contact-dialog" class="app-dialog">
+    <form id="contact-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">NOUVEAU DOSSIER</p><h2>Ajouter un contact</h2></div><button class="icon-button dialog-close" type="button" data-close-dialog aria-label="Fermer">×</button></div>
+      <div class="form-grid">
+        <label>Prénom<input name="first_name" required maxlength="100"></label>
+        <label>Nom<input name="last_name" required maxlength="100"></label>
+        <label>Entreprise<input name="company" required maxlength="180"></label>
+        <label>Fonction<input name="job_title" maxlength="160"></label>
+        <label>E-mail<input name="email" type="email" maxlength="254"></label>
+        <label>Téléphone<input name="phone" type="tel" maxlength="50"></label>
+        <label>Type<select name="kind"><option value="prospect">Prospect</option><option value="client">Client</option><option value="partner">Partenaire</option></select></label>
+        <label>Statut<select name="status"><option value="new">À contacter</option><option value="contacted">Contacté</option><option value="qualified">Qualifié</option><option value="customer">Client actif</option><option value="paused">En pause</option></select></label>
+        <label class="span-2">Prochaine étape<input name="next_step" maxlength="240" placeholder="Ex. Envoyer la présentation"></label>
+        <label>Échéance<input name="next_due_at" type="date"></label>
+        <label class="span-2">Notes<textarea name="notes" rows="3" maxlength="3000"></textarea></label>
+      </div>
+      <p id="contact-form-error" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button class="button button-secondary" type="button" data-close-dialog>Annuler</button><button class="button button-primary" type="submit">Enregistrer le contact</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="activity-dialog" class="app-dialog">
+    <form id="activity-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">SUIVI D’ACTIVITÉ</p><h2>Consigner une action</h2></div><button class="icon-button dialog-close" type="button" data-close-dialog aria-label="Fermer">×</button></div>
+      <div class="form-grid">
+        <label>Type<select name="kind"><option value="call">Appel</option><option value="meeting">Rendez-vous</option><option value="email">E-mail</option><option value="follow_up">Relance</option><option value="admin">Démarche administrative</option><option value="field">Intervention terrain</option><option value="expense">Dépense</option><option value="other">Autre action</option></select></label>
+        <label>Contact<select id="activity-contact" name="contact_id"><option value="">Aucun contact associé</option></select></label>
+        <label class="span-2">Objet<input name="title" required maxlength="180" placeholder="Ex. Échange de découverte"></label>
+        <label>Date et heure<input name="occurred_at" type="datetime-local" required></label>
+        <label>Prochaine échéance<input name="due_at" type="date"></label>
+        <label class="span-2">Compte-rendu<textarea name="summary" rows="4" maxlength="4000" required placeholder="Personnes concernées, résultat, prochaine étape…"></textarea></label>
+        <label class="span-2">Justificatif (facultatif)<input name="proof" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" data-max-bytes="10485760"><small class="field-help">PDF, image ou document · 10 Mo max. Les règles de stockage de l’équipe s’appliquent.</small></label>
+      </div>
+      <p id="activity-form-error" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button class="button button-secondary" type="button" data-close-dialog>Annuler</button><button class="button button-primary" type="submit">Enregistrer l’activité</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
